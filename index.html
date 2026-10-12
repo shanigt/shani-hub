@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז שליטה וממשקים | שני</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 24px 16px 100px 16px; max-width: 900px; margin: 0 auto; direction: rtl; text-align: right; }
+
+        header { margin-bottom: 28px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .brand-logo-container { margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+        .brand-logo { max-width: 220px; height: auto; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); display: block; }
+
+        header h1 { font-size: 1.8rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .search-box { margin-bottom: 28px; }
+        .search-box input {
+            width: 100%; padding: 14px 18px; border: 1px solid var(--border);
+            border-radius: 12px; font-size: 1rem; outline: none; transition: all 0.2s;
+            background: #fff; box-shadow: var(--shadow); text-align: right; direction: rtl;
+        }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+
+        .section { margin-bottom: 36px; }
+        .section-title {
+            font-size: 1.15rem; font-weight: 700; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px; color: #334155;
+            border-bottom: 2px solid var(--border); padding-bottom: 8px;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+            padding: 18px; text-decoration: none; color: inherit; transition: all 0.2s ease;
+            display: flex; flex-direction: column; justify-content: space-between; position: relative;
+            box-shadow: var(--shadow); text-align: right; direction: rtl;
+        }
+        .card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 12px 20px -3px rgba(0,0,0,0.08); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+        .card-title { font-weight: 700; font-size: 1.05rem; color: #1e293b; }
+        .card-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; text-align: right; margin-bottom: 12px; }
+
+        .card-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--border); }
+        .btn-open { text-decoration: none; font-size: 0.82rem; font-weight: 700; color: var(--primary); }
+        .btn-help {
+            background: #f1f5f9; border: 1px solid var(--border); color: #475569;
+            padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-help:hover { background: #e2e8f0; color: #1e293b; }
+
+        .badge { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+        .badge-ready { background: #dcfce7; color: #15803d; }
+        .badge-progress { background: #fef9c3; color: #a16207; }
+        .badge-meeting { background: #e0e7ff; color: #4338ca; }
+
+        .help-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);
+            z-index: 2000; justify-content: center; align-items: center; padding: 16px;
+        }
+        .help-modal-card {
+            background: #fff; width: 100%; max-width: 480px; border-radius: 18px;
+            padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            position: relative; direction: rtl; text-align: right;
+        }
+        .help-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .help-modal-title { font-size: 1.2rem; font-weight: 700; color: #1e293b; }
+        .help-modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b; }
+        .help-modal-body { font-size: 0.95rem; color: #334155; line-height: 1.6; }
+
+        .ai-fab {
+            position: fixed; bottom: 24px; left: 24px;
+            background: var(--primary); color: #fff; border: none;
+            padding: 14px 22px; border-radius: 50px; font-weight: 700; font-size: 0.95rem;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.35);
+            display: flex; align-items: center; gap: 8px; z-index: 1000;
+            transition: all 0.2s ease;
+        }
+        .ai-fab:hover { background: var(--primary-hover); transform: scale(1.05); }
+
+        .ai-modal {
+            display: none; position: fixed; bottom: 86px; left: 24px;
+            width: 350px; height: 420px; background: #fff; border: 1px solid var(--border);
+            border-radius: 18px; box-shadow: 0 20px 30px rgba(0,0,0,0.15);
+            flex-direction: column; z-index: 1000; overflow: hidden; direction: rtl; text-align: right;
+        }
+        .ai-header {
+            background: var(--primary); color: #fff; padding: 14px 18px;
+            font-weight: 700; display: flex; justify-content: space-between; align-items: center;
+        }
+        .ai-close { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+        .ai-body { flex: 1; padding: 16px; font-size: 0.92rem; color: #334155; display: flex; flex-direction: column; gap: 12px; line-height: 1.5; }
+        .ai-quick-btn {
+            background: #f1f5f9; border: 1px solid var(--border); padding: 10px 14px;
+            border-radius: 10px; text-align: right; font-weight: 600; color: #1e293b;
+            cursor: pointer; text-decoration: none; display: block; transition: background 0.2s;
+        }
+        .ai-quick-btn:hover { background: #e2e8f0; }
+
+        footer { text-align: center; margin-top: 40px; font-size: 0.85rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-logo-container">
+            <img src="https://lh3.googleusercontent.com/d/1nlBrfsZq8hoU1KmxR_VSqm_uLtpA8KUl" alt="שני | תפור לעסק" class="brand-logo">
+        </div>
+        <h1>מרכז שליטה וממשקים עסקיים</h1>
+        <p>כל המערכות, המסמכים ותיק העבודות במקום אחד</p>
+    </header>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="🔍 חיפוש מהיר של ממשק, לקוח או מסמך...">
+    </div>
+
+    <!-- 🟢 1. ניהול פנימי של העסק שלי (תפור לעסק) -->
+    <div class="section">
+        <div class="section-title">🟢 ניהול פנימי ומסמכים (תפור לעסק בלבד)</div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📊 ממשק ניהול עסק</span>
+                    <span class="badge badge-ready">ארטיפקט חי</span>
+                </div>
+                <div class="card-desc">מערכת הניהול המרכזית לעסק</div>
+                <div class="card-actions">
+                    <a href="https://claude.ai/artifact/3Pr2BaBUoNBANG7sD3w9bk" target="_blank" rel="noopener noreferrer" class="btn-open">פתח ממשק 🔗</a>
+                    <button class="btn-help" onclick="showHelp('ממשק ניהול עסק', 'מערכת מרכזית לניהול פרויקטים, משימות, פניות מלקוחות ומעקב עבודה שוטף.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📄 מחירון שירותים 2026</span>
+                    <span class="badge badge-ready">PDF בדרייב</span>
+                </div>
+                <div class="card-desc">מחירון דפי נחיתה, אפליקציות וחבילות תחזוקה</div>
+                <div class="card-actions">
+                    <a href="https://drive.google.com/file/d/1UQfTufyb3oTDc26AchsZNYUNwiOfr0UZ/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-open">פתח מסמך 🔗</a>
+                    <button class="btn-help" onclick="showHelp('מחירון שירותים 2026', 'קובץ PDF רשמי המפרט את כל חבילות השירות: דפי נחיתה, אפליקציות תפורות, תוספות וחבילות תחזוקה חודשיות.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📜 הסכם מול לקוח</span>
+                    <span class="badge badge-ready">Google Docs</span>
+                </div>
+                <div class="card-desc">הסכם התקשרות חכם למתן שירותים</div>
+                <div class="card-actions">
+                    <a href="https://docs.google.com/document/d/1u7XwloCwPRjC_eo9Nfv-qtQmrw2MEb7S/edit?usp=drivesdk&ouid=109005748984395550163&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer" class="btn-open">פתח מסמך 🔗</a>
+                    <button class="btn-help" onclick="showHelp('הסכם מול לקוח', 'מסמך Word/Docs הניתן לעריכה לפני שליחה ללקוח. כולל תנאי תשלום, זמני אספקה, סבבי תיקונים וזכויות יוצרים.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💬 תסריט שיחה והצגה</span>
+                    <span class="badge badge-ready">ארטיפקט חי</span>
+                </div>
+                <div class="card-desc">תסריט שיחה מובנה להצגת המערכת והשירותים ללקוחות</div>
+                <div class="card-actions">
+                    <a href="https://claude.ai/artifact/KHdNCRX6hkhSSpAYzTVaeQ#f131b25f-eb0c" target="_blank" rel="noopener noreferrer" class="btn-open">פתח תסריט 🔗</a>
+                    <button class="btn-help" onclick="showHelp('תסריט שיחה', 'ארטיפקט המכיל דגשים ונקודות מפתח לשיחות מכירה, אפיון והצגת מערכות ללקוחות חדשים.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔵 2. תיק עבודות & פרויקטים ללקוחות -->
+    <div class="section">
+        <div class="section-title">🔵 תיק עבודות & פרויקטים ללקוחות</div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">דף נחיתה – מורן</span>
+                    <span class="badge badge-ready">ארטיפקט מורן</span>
+                </div>
+                <div class="card-desc">דף נחיתה מוכן לתיק העבודות של מורן</div>
+                <div class="card-actions">
+                    <a href="https://claude.ai/artifact/Tyjnv9nqjXjSSX4bw9LhtB" target="_blank" rel="noopener noreferrer" class="btn-open">צפה בעמוד 🔗</a>
+                    <button class="btn-help" onclick="showHelp('דף נחיתה – מורן', 'עמוד נחיתה מעוצב שביצעת עבור מורן, מתאים להצגה בתיק העבודות ללקוחות בתחום הספציפי.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">ממשק – שלי ושי</span>
+                    <span class="badge badge-ready">חי ברשת</span>
+                </div>
+                <div class="card-desc">אפליקציה פתוחה ומוכנה להצגה מול לקוחות</div>
+                <div class="card-actions">
+                    <a href="https://shelly-shai-app.shanigt.workers.dev/" target="_blank" rel="noopener noreferrer" class="btn-open">פתח אפליקציה 🔗</a>
+                    <button class="btn-help" onclick="showHelp('ממשק – שלי ושי', 'אפליקציה חיה ופעילה ב-Cloudflare Workers המשמשת כדוגמה מצוינת למערכת תפורה לעסק.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">דף/אפליקציה – שחר אקססוריז</span>
+                    <span class="badge badge-ready">חי ברשת</span>
+                </div>
+                <div class="card-desc">פרויקט שחר אקססוריז ב-GitHub Pages</div>
+                <div class="card-actions">
+                    <a href="https://shanigt.github.io/shahar-accessories" target="_blank" rel="noopener noreferrer" class="btn-open">פתח עמוד 🔗</a>
+                    <button class="btn-help" onclick="showHelp('שחר אקססוריז', 'אתר/אפליקציה חיה שמאוחסנת ב-GitHub Pages להצגת קטלוג ומכירת מוצרים.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">דף נחיתה – רוני מיסק</span>
+                    <span class="badge badge-ready">ארטיפקט רוני</span>
+                </div>
+                <div class="card-desc">דף הנחיתה המעודכן של רוני מיסק</div>
+                <div class="card-actions">
+                    <a href="https://claude.ai/artifact/D8LLgRN7Xhg9nvyz9ywZaD#play-15dd8cd198dd" target="_blank" rel="noopener noreferrer" class="btn-open">צפה בעמוד 🔗</a>
+                    <button class="btn-help" onclick="showHelp('דף נחיתה – רוני מיסק', 'דף נחיתה אישי ומותאם שנבנה בארטיפקט עבור רוני מיסק.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">ממשק אירועים – היישה (יעל)</span>
+                    <span class="badge badge-meeting">מערכת אירועים</span>
+                </div>
+                <div class="card-desc">ממשק הצגה ומערכת ניהול להיישה</div>
+                <div class="card-actions">
+                    <a href="https://claude.ai/artifact/3PQQCeyhjvsxDNJLxQGnuf" target="_blank" rel="noopener noreferrer" class="btn-open">פתח ממשק 🔗</a>
+                    <button class="btn-help" onclick="showHelp('ממשק אירועים – היישה (יעל)', 'מערכת מותאמת אישית לניהול אירועים, מעקב מוזמנים וספקים שנבנתה עבור יעל.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🟣 3. מאי מתנות (תפעול) -->
+    <div class="section">
+        <div class="section-title">🟣 מאי מתנות (תפעול)</div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🛍️ ממשק אפליקציית דוכן</span>
+                    <span class="badge badge-ready">חי ברשת</span>
+                </div>
+                <div class="card-desc">אפליקציית ניהול מכירות ומלאי בזמן אמת</div>
+                <div class="card-actions">
+                    <a href="https://dukan-mai-mtanot.shanigt.workers.dev/" target="_blank" rel="noopener noreferrer" class="btn-open">פתח אפליקציה 🔗</a>
+                    <button class="btn-help" onclick="showHelp('אפליקציית דוכן - מאי מתנות', 'אפליקציה תפעולית לניהול מכירות בזמן אמת בדוכן, עדכון מחירון, בדיקת מלאי וניהול מבצעים.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📄 מחירון מאי מתנות מעודכן</span>
+                    <span class="badge badge-ready">Google Docs</span>
+                </div>
+                <div class="card-desc">מחירון המוצרים והמבצעים המעודכן של הדוכן</div>
+                <div class="card-actions">
+                    <a href="https://docs.google.com/document/d/1hE7q1dvCwevseHWEedGALLLifBmFIf3JwiqwyX7eU54/edit" target="_blank" rel="noopener noreferrer" class="btn-open">פתח מחירון 🔗</a>
+                    <button class="btn-help" onclick="showHelp('מחירון מאי מתנות מעודכן', 'מסמך דרייב המרכז את כל מחירי המוצרים, המבצעים (3 ב-100) ומארזי השעם לפי הנתונים המעודכנים בדוכן.')">❓ מדריך / עזרה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="help-modal-overlay" id="helpModal" onclick="closeHelp(event)">
+        <div class="help-modal-card">
+            <div class="help-modal-header">
+                <span class="help-modal-title" id="helpTitle">כותרת מדריך</span>
+                <button class="help-modal-close" onclick="closeHelpDirect()">✕</button>
+            </div>
+            <div class="help-modal-body" id="helpBody">
+                תוכן המדריך ייטען כאן...
+            </div>
+        </div>
+    </div>
+
+    <button class="ai-fab" onclick="toggleAI()">🤖 עוזר AI אישי</button>
+
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-header">
+            <span>🤖 עוזר ניהול & קופי</span>
+            <button class="ai-close" onclick="toggleAI()">✕</button>
+        </div>
+        <div class="ai-body">
+            <p>היי שני! זקוקה לניסוח מהיר, רעיונות לפגישה או עזרה בממשקים?</p>
+            <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="ai-quick-btn">💬 פתחי צ'אט AI מהיר להתייעצות</a>
+            <a href="#" onclick="alert('תזכורת לשחר: היי שחר, מה נשמע? מחכה לחומרים האחרונים כדי לסגור לך את העמוד!'); return false;" class="ai-quick-btn">📝 תזכורת לחומרים משחר</a>
+            <a href="#" onclick="alert('דגשים לפגישה עם יעל (היישה אירועים):\n1. הצגת ממשק ניהול האירוע בזמן אמת\n2. מעקב מוזמנים וספקים\n3. תפעול פשוט ונוח מכל נייד'); return false;" class="ai-quick-btn">🎯 דגשים לפגישה עם היישה אירועים</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>Dashboard v6.5 • שני | תפור לעסק</p>
+    </footer>
+
+    <script>
+        function filterCards() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
+            for (let card of cards) {
+                let text = card.textContent.toLowerCase();
+                card.style.display = text.includes(input) ? "flex" : "none";
+            }
+        }
+
+        function toggleAI() {
+            let modal = document.getElementById('aiModal');
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function showHelp(title, text) {
+            document.getElementById('helpTitle').innerText = '❓ מדריך: ' + title;
+            document.getElementById('helpBody').innerText = text;
+            document.getElementById('helpModal').style.display = 'flex';
+        }
+
+        function closeHelpDirect() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        function closeHelp(e) {
+            if (e.target.id === 'helpModal') {
+                document.getElementById('helpModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
